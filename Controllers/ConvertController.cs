@@ -187,15 +187,14 @@ namespace PdfToWordConverter.Controllers
                 return BadRequest("Page range not provided.");
             }
 
-
             try
             {
                 using (PdfDocument originalDocument = PdfReader.Open(sourceFile.OpenReadStream(), PdfDocumentOpenMode.Import))
                 {
                     var pageNumbers = ParsePageNumbers(pageRange);
-                    if (pageNumbers == null)
+                    if (pageNumbers == null || pageNumbers.Count == 0)
                     {
-                        return BadRequest("Invalid page range format.");
+                        return BadRequest("Invalid or empty page range format.");
                     }
 
                     PdfDocument newDocument = new PdfDocument();
@@ -224,9 +223,13 @@ namespace PdfToWordConverter.Controllers
                             }
                             newFilePath = Path.Combine(Path.GetTempPath(), newFileName);
                         }
+
                         newDocument.Save(newFilePath);
 
                         byte[] fileBytes = System.IO.File.ReadAllBytes(newFilePath);
+
+                        // Ensure the temporary file is deleted after reading it
+                        System.IO.File.Delete(newFilePath);
 
                         var fileContentResult = new FileContentResult(fileBytes, "application/pdf")
                         {
@@ -257,17 +260,19 @@ namespace PdfToWordConverter.Controllers
                 string[] parts = range.Trim().Split('-');
                 if (parts.Length == 1)
                 {
+                    // Single page number
                     if (int.TryParse(parts[0], out int pageNumber))
                     {
                         pageNumbers.Add(pageNumber);
                     }
                     else
                     {
-                        return null;
+                        return null; // Invalid single page number
                     }
                 }
                 else if (parts.Length == 2)
                 {
+                    // Range of page numbers
                     if (int.TryParse(parts[0], out int startPage) && int.TryParse(parts[1], out int endPage))
                     {
                         for (int i = startPage; i <= endPage; i++)
@@ -277,12 +282,12 @@ namespace PdfToWordConverter.Controllers
                     }
                     else
                     {
-                        return null;
+                        return null; // Invalid range format
                     }
                 }
                 else
                 {
-                    return null;
+                    return null; // Invalid format
                 }
             }
 
