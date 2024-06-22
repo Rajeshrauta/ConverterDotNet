@@ -121,7 +121,7 @@ namespace PdfToWordConverter.Controllers
         }
 
 
-        [HttpPost("Rotate-Pdf")]
+        [HttpPost("rotate-pdf")]
         public IActionResult Rotate(IFormFile file, string rotationDirection)
         {
             if (file == null || file.Length == 0)
@@ -174,7 +174,7 @@ namespace PdfToWordConverter.Controllers
         }
 
 
-        [HttpPost("Split")]
+        [HttpPost("split")]
         public IActionResult Split(IFormFile sourceFile, string pageRange, string newFileName = "")
         {
             if (sourceFile == null || sourceFile.Length == 0)
